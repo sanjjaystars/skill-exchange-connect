@@ -66,6 +66,8 @@ const AnimatedRoutes = () => {
             <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
             <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
             <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
+            <Route path="/announcements" element={<ProtectedRoute><Announcements /></ProtectedRoute>} />
+            <Route path="/admin/notices" element={<ProtectedRoute><AdminNotices /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
