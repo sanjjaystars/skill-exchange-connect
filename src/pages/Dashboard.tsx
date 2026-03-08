@@ -8,7 +8,6 @@ import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateMatchPercentage } from "@/lib/matching";
-import type { Tables } from "@/integrations/supabase/types";
 import type { MatchUser } from "@/components/MatchCard";
 
 const Dashboard = () => {
@@ -77,39 +76,40 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
 
-      <main className="container mx-auto pt-24 pb-12 px-4">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-8">
-          <h1 className="text-3xl font-display font-bold mb-2">Your Matches</h1>
-          <p className="text-muted-foreground">
-            <span className="text-primary font-medium">{onlineCount} learners</span> online right now
+      <main className="container mx-auto pt-20 pb-12 px-4">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-display font-bold mb-1">Your Matches</h1>
+          <p className="text-sm text-muted-foreground">
+            <span className="text-primary font-medium">{onlineCount} learners</span> online now
           </p>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="flex gap-3 mb-8">
-          <div className="relative flex-1 max-w-md">
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="mb-6">
+          <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search by skill or name..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-secondary border-border focus:border-primary/50"
+              className="pl-10 bg-secondary border-border focus:border-primary/50 h-10"
             />
           </div>
         </motion.div>
 
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="grid grid-cols-3 gap-4 mb-8">
+        {/* Stats — responsive grid */}
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 }} className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
           {[
             { label: "Total Matches", value: users.length, icon: Filter },
             { label: "High Match (80%+)", value: users.filter((u) => u.matchPercentage >= 80).length, icon: TrendingUp },
             { label: "Online Now", value: onlineCount, icon: Search },
           ].map((stat) => (
-            <div key={stat.label} className="glass rounded-xl p-4 flex items-center gap-3">
-              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+            <div key={stat.label} className="glass rounded-xl p-3 sm:p-4 flex items-center gap-3">
+              <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                 <stat.icon className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-display font-bold">{stat.value}</p>
-                <p className="text-xs text-muted-foreground">{stat.label}</p>
+                <p className="text-xl sm:text-2xl font-display font-bold">{stat.value}</p>
+                <p className="text-[11px] sm:text-xs text-muted-foreground">{stat.label}</p>
               </div>
             </div>
           ))}
@@ -130,7 +130,7 @@ const Dashboard = () => {
             <p className="text-muted-foreground">Loading matches...</p>
           </div>
         ) : !error && (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {sortedUsers.map((user, i) => (
               <MatchCard key={user.id} user={user} index={i} />
             ))}
@@ -139,7 +139,7 @@ const Dashboard = () => {
 
         {!loading && !error && sortedUsers.length === 0 && (
           <div className="text-center py-20">
-            <p className="text-muted-foreground text-lg">
+            <p className="text-muted-foreground text-base sm:text-lg">
               {searchQuery ? `No matches found for "${searchQuery}"` : "No other users yet. Invite someone to join!"}
             </p>
           </div>
