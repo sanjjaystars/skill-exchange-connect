@@ -29,6 +29,19 @@ const Login = () => {
       if (error) {
         toast.error(error.message);
       } else {
+        // Process referral if ref code exists
+        if (refCode) {
+          try {
+            const { data: { user: newUser } } = await supabase.auth.getUser();
+            if (newUser) {
+              await supabase.rpc("process_referral", {
+                p_referral_code: refCode,
+                p_new_user_id: newUser.id,
+              });
+              toast.success("Referral applied! Your friend earned bonus points.");
+            }
+          } catch {}
+        }
         toast.success("Account created! Check your email to confirm, or sign in directly.");
         navigate("/dashboard");
       }
