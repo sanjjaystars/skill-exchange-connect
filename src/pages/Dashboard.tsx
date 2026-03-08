@@ -1,0 +1,101 @@
+import { useState } from "react";
+import Navbar from "@/components/Navbar";
+import MatchCard from "@/components/MatchCard";
+import { Input } from "@/components/ui/input";
+import { mockUsers } from "@/data/mockData";
+import { Search, Filter, TrendingUp } from "lucide-react";
+import { motion } from "framer-motion";
+
+const Dashboard = () => {
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredUsers = mockUsers.filter((user) => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    return (
+      user.name.toLowerCase().includes(q) ||
+      user.teaches.some((s) => s.toLowerCase().includes(q)) ||
+      user.wants.some((s) => s.toLowerCase().includes(q))
+    );
+  });
+
+  const sortedUsers = [...filteredUsers].sort((a, b) => b.matchPercentage - a.matchPercentage);
+  const onlineCount = mockUsers.filter((u) => u.online).length;
+
+  return (
+    <div className="min-h-screen bg-background">
+      <Navbar />
+
+      <main className="container mx-auto pt-24 pb-12 px-4">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <h1 className="text-3xl font-display font-bold mb-2">Your Matches</h1>
+          <p className="text-muted-foreground">
+            <span className="text-primary font-medium">{onlineCount} learners</span> online right now
+          </p>
+        </motion.div>
+
+        {/* Search */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="flex gap-3 mb-8"
+        >
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search by skill or name..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 bg-secondary border-border focus:border-primary/50"
+            />
+          </div>
+        </motion.div>
+
+        {/* Stats row */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="grid grid-cols-3 gap-4 mb-8"
+        >
+          {[
+            { label: "Total Matches", value: mockUsers.length, icon: Filter },
+            { label: "High Match (80%+)", value: mockUsers.filter((u) => u.matchPercentage >= 80).length, icon: TrendingUp },
+            { label: "Online Now", value: onlineCount, icon: Search },
+          ].map((stat) => (
+            <div key={stat.label} className="glass rounded-xl p-4 flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                <stat.icon className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-2xl font-display font-bold">{stat.value}</p>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
+              </div>
+            </div>
+          ))}
+        </motion.div>
+
+        {/* Grid */}
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {sortedUsers.map((user, i) => (
+            <MatchCard key={user.id} user={user} index={i} />
+          ))}
+        </div>
+
+        {sortedUsers.length === 0 && (
+          <div className="text-center py-20">
+            <p className="text-muted-foreground text-lg">No matches found for "{searchQuery}"</p>
+          </div>
+        )}
+      </main>
+    </div>
+  );
+};
+
+export default Dashboard;
