@@ -1,72 +1,64 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Navbar from "@/components/Navbar";
 import MatchCard from "@/components/MatchCard";
 import { Input } from "@/components/ui/input";
-import { Search, Filter, TrendingUp } from "lucide-react";
+import { Search, Filter, TrendingUp, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { calculateMatchPercentage } from "@/lib/matching";
 import type { Tables } from "@/integrations/supabase/types";
-
-type Profile = Tables<"profiles">;
-
-export interface MatchUserData {
-  id: string;
-  user_id: string;
-  name: string;
-  location: string;
-  bio: string;
-  avatar: string;
-  teaches: string[];
-  wants: string[];
-  matchPercentage: number;
-  online: boolean;
-}
+import type { MatchUser } from "@/components/MatchCard";
 
 const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [users, setUsers] = useState<MatchUserData[]>([]);
+  const [users, setUsers] = useState<MatchUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  useEffect(() => {
-    const fetchProfiles = async () => {
-      if (!user) return;
+  const fetchProfiles = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+    setError(null);
 
-      // Get my profile
-      const { data: myProfile } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("user_id", user.id)
-        .single();
+    try {
+      const [myProfileRes, profilesRes] = await Promise.all([
+        supabase.from("profiles").select("*").eq("user_id", user.id).single(),
+        supabase.from("profiles").select("*").neq("user_id", user.id),
+      ]);
 
-      // Get all other profiles
-      const { data: profiles } = await supabase
-        .from("profiles")
-        .select("*")
-        .neq("user_id", user.id);
+      if (myProfileRes.error) throw myProfileRes.error;
+      if (profilesRes.error) throw profilesRes.error;
 
-      if (profiles && myProfile) {
-        const mapped: MatchUserData[] = profiles.map((p) => ({
-          id: p.id,
-          user_id: p.user_id,
-          name: p.name,
-          location: p.location ?? "",
-          bio: p.bio ?? "",
-          avatar: p.avatar_url ?? "",
-          teaches: p.teaches ?? [],
-          wants: p.wants ?? [],
-          matchPercentage: calculateMatchPercentage(myProfile, p),
-          online: p.online ?? false,
-        }));
-        setUsers(mapped);
-      }
+      const myProfile = myProfileRes.data;
+      const profiles = profilesRes.data ?? [];
+
+      const mapped: MatchUser[] = profiles.map((p) => ({
+        id: p.id,
+        user_id: p.user_id,
+        name: p.name || "Unknown",
+        location: p.location ?? "",
+        bio: p.bio ?? "",
+        avatar: p.avatar_url ?? "",
+        teaches: p.teaches ?? [],
+        wants: p.wants ?? [],
+        matchPercentage: calculateMatchPercentage(myProfile, p),
+        online: p.online ?? false,
+      }));
+      setUsers(mapped);
+    } catch (err: any) {
+      console.error("Failed to fetch profiles:", err);
+      setError("Failed to load matches. Please try again.");
+    } finally {
       setLoading(false);
-    };
-
-    fetchProfiles();
+    }
   }, [user]);
+
+  useEffect(() => {
+    fetchProfiles();
+  }, [fetchProfiles]);
 
   const filteredUsers = users.filter((u) => {
     if (!searchQuery) return true;
@@ -123,12 +115,21 @@ const Dashboard = () => {
           ))}
         </motion.div>
 
+        {error && (
+          <div className="text-center py-10">
+            <p className="text-destructive mb-3">{error}</p>
+            <Button variant="outline" size="sm" onClick={fetchProfiles}>
+              <RefreshCw className="h-4 w-4 mr-1.5" /> Retry
+            </Button>
+          </div>
+        )}
+
         {loading ? (
           <div className="text-center py-20">
             <div className="h-8 w-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <p className="text-muted-foreground">Loading matches...</p>
           </div>
-        ) : (
+        ) : !error && (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {sortedUsers.map((user, i) => (
               <MatchCard key={user.id} user={user} index={i} />
@@ -136,7 +137,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {!loading && sortedUsers.length === 0 && (
+        {!loading && !error && sortedUsers.length === 0 && (
           <div className="text-center py-20">
             <p className="text-muted-foreground text-lg">
               {searchQuery ? `No matches found for "${searchQuery}"` : "No other users yet. Invite someone to join!"}

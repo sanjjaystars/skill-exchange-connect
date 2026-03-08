@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
@@ -13,46 +13,110 @@ import type { Tables } from "@/integrations/supabase/types";
 type Message = Tables<"messages">;
 type Profile = Tables<"profiles">;
 
+const ChatContactItem = ({
+  contact,
+  isSelected,
+  onSelect,
+}: {
+  contact: Profile;
+  isSelected: boolean;
+  onSelect: () => void;
+}) => (
+  <button
+    onClick={onSelect}
+    className={cn(
+      "w-full flex items-center gap-3 p-3 transition-all duration-150 text-left",
+      isSelected
+        ? "bg-primary/10 border-r-2 border-primary"
+        : "hover:bg-secondary/50"
+    )}
+  >
+    <div className="relative shrink-0">
+      <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-sm font-display font-bold">
+        {contact.name?.[0] ?? "?"}
+      </div>
+      {contact.online && (
+        <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-success border-2 border-card" />
+      )}
+    </div>
+    <div className="min-w-0 flex-1">
+      <p className="text-sm font-medium truncate">{contact.name}</p>
+      <p className="text-xs text-muted-foreground truncate">
+        {(contact.teaches ?? []).slice(0, 2).join(", ")}
+      </p>
+    </div>
+  </button>
+);
+
+const ChatMessage = ({
+  msg,
+  isOwn,
+  index,
+}: {
+  msg: Message;
+  isOwn: boolean;
+  index: number;
+}) => (
+  <motion.div
+    initial={{ opacity: 0, y: 10 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ delay: Math.min(index * 0.02, 0.5) }}
+    className={cn("flex", isOwn ? "justify-end" : "justify-start")}
+  >
+    <div
+      className={cn(
+        "max-w-[70%] rounded-2xl px-4 py-2.5 text-sm",
+        isOwn
+          ? "bg-primary text-primary-foreground rounded-br-md"
+          : "bg-secondary text-secondary-foreground rounded-bl-md"
+      )}
+    >
+      <p>{msg.text}</p>
+      <p
+        className={cn(
+          "text-[10px] mt-1",
+          isOwn ? "text-primary-foreground/60" : "text-muted-foreground"
+        )}
+      >
+        {new Date(msg.created_at).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })}
+      </p>
+    </div>
+  </motion.div>
+);
+
 const Chat = () => {
   const { userId } = useParams();
   const { user } = useAuth();
   const [contacts, setContacts] = useState<Profile[]>([]);
-  const [selectedUserId, setSelectedUserId] = useState<string | null>(userId ?? null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(
+    userId ?? null
+  );
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [showSidebar, setShowSidebar] = useState(true);
+  const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Fetch contacts (people we've messaged or connected with)
-  useEffect(() => {
+  const fetchContacts = useCallback(async () => {
     if (!user) return;
 
-    const fetchContacts = async () => {
-      // Get unique user IDs from messages
-      const { data: sentMessages } = await supabase
-        .from("messages")
-        .select("receiver_id")
-        .eq("sender_id", user.id);
-      const { data: receivedMessages } = await supabase
-        .from("messages")
-        .select("sender_id")
-        .eq("receiver_id", user.id);
-
-      // Get connected users
-      const { data: connections } = await supabase
-        .from("connections")
-        .select("requester_id, receiver_id")
-        .or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`);
+    try {
+      const [sentRes, receivedRes, connectionsRes] = await Promise.all([
+        supabase.from("messages").select("receiver_id").eq("sender_id", user.id),
+        supabase.from("messages").select("sender_id").eq("receiver_id", user.id),
+        supabase.from("connections").select("requester_id, receiver_id").or(`requester_id.eq.${user.id},receiver_id.eq.${user.id}`),
+      ]);
 
       const userIds = new Set<string>();
-      sentMessages?.forEach((m) => userIds.add(m.receiver_id));
-      receivedMessages?.forEach((m) => userIds.add(m.sender_id));
-      connections?.forEach((c) => {
+      sentRes.data?.forEach((m) => userIds.add(m.receiver_id));
+      receivedRes.data?.forEach((m) => userIds.add(m.sender_id));
+      connectionsRes.data?.forEach((c) => {
         if (c.requester_id !== user.id) userIds.add(c.requester_id);
         if (c.receiver_id !== user.id) userIds.add(c.receiver_id);
       });
-
-      // If we have a userId param, add it
       if (userId) userIds.add(userId);
 
       if (userIds.size === 0) return;
@@ -63,78 +127,86 @@ const Chat = () => {
         .in("user_id", Array.from(userIds));
 
       if (profiles) setContacts(profiles);
-    };
-
-    fetchContacts();
+    } catch (err) {
+      console.error("Failed to fetch contacts:", err);
+    }
   }, [user, userId]);
 
-  // Fetch messages for selected conversation
+  useEffect(() => {
+    fetchContacts();
+  }, [fetchContacts]);
+
   useEffect(() => {
     if (!user || !selectedUserId) return;
 
-    const fetchMessages = async () => {
-      const { data } = await supabase
-        .from("messages")
-        .select("*")
-        .or(
-          `and(sender_id.eq.${user.id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.id})`
-        )
-        .order("created_at", { ascending: true });
+    let isMounted = true;
 
-      if (data) setMessages(data);
+    const fetchMessages = async () => {
+      try {
+        const { data } = await supabase
+          .from("messages")
+          .select("*")
+          .or(
+            `and(sender_id.eq.${user.id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.id})`
+          )
+          .order("created_at", { ascending: true });
+
+        if (data && isMounted) setMessages(data);
+      } catch (err) {
+        console.error("Failed to fetch messages:", err);
+      }
     };
 
     fetchMessages();
 
-    // Subscribe to real-time messages
     const channel = supabase
       .channel(`messages-${selectedUserId}`)
       .on(
         "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "messages",
-        },
+        { event: "INSERT", schema: "public", table: "messages" },
         (payload) => {
           const msg = payload.new as Message;
-          // Only add if it's part of this conversation
           if (
             (msg.sender_id === user.id && msg.receiver_id === selectedUserId) ||
             (msg.sender_id === selectedUserId && msg.receiver_id === user.id)
           ) {
-            setMessages((prev) => [...prev, msg]);
+            setMessages((prev) => {
+              // Prevent duplicates
+              if (prev.some((m) => m.id === msg.id)) return prev;
+              return [...prev, msg];
+            });
           }
         }
       )
       .subscribe();
 
     return () => {
+      isMounted = false;
       supabase.removeChannel(channel);
     };
   }, [user, selectedUserId]);
 
-  // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
   const handleSend = async () => {
-    if (!newMessage.trim() || !user || !selectedUserId) return;
+    if (!newMessage.trim() || !user || !selectedUserId || sending) return;
 
-    const { error } = await supabase.from("messages").insert({
-      sender_id: user.id,
-      receiver_id: selectedUserId,
-      text: newMessage.trim(),
-    });
-
-    if (!error) {
-      setNewMessage("");
+    setSending(true);
+    try {
+      const { error } = await supabase.from("messages").insert({
+        sender_id: user.id,
+        receiver_id: selectedUserId,
+        text: newMessage.trim(),
+      });
+      if (!error) setNewMessage("");
+    } catch (err) {
+      console.error("Failed to send message:", err);
+    } finally {
+      setSending(false);
     }
   };
-
-  const formatTime = (dateStr: string) =>
-    new Date(dateStr).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   const selectedContact = contacts.find((c) => c.user_id === selectedUserId);
 
@@ -152,7 +224,9 @@ const Chat = () => {
           )}
         >
           <div className="p-4 border-b border-border/50">
-            <h2 className="font-display font-semibold text-sm text-muted-foreground mb-3">Conversations</h2>
+            <h2 className="font-display font-semibold text-sm text-muted-foreground">
+              Conversations
+            </h2>
           </div>
           <div className="flex-1 overflow-y-auto">
             {contacts.length === 0 && (
@@ -161,34 +235,15 @@ const Chat = () => {
               </div>
             )}
             {contacts.map((contact) => (
-              <button
+              <ChatContactItem
                 key={contact.user_id}
-                onClick={() => {
+                contact={contact}
+                isSelected={selectedUserId === contact.user_id}
+                onSelect={() => {
                   setSelectedUserId(contact.user_id);
                   setShowSidebar(false);
                 }}
-                className={cn(
-                  "w-full flex items-center gap-3 p-3 transition-all duration-150 text-left",
-                  selectedUserId === contact.user_id
-                    ? "bg-primary/10 border-r-2 border-primary"
-                    : "hover:bg-secondary/50"
-                )}
-              >
-                <div className="relative shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-sm font-display font-bold">
-                    {contact.name[0]}
-                  </div>
-                  {contact.online && (
-                    <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-success border-2 border-card" />
-                  )}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium truncate">{contact.name}</p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {(contact.teaches ?? []).slice(0, 2).join(", ")}
-                  </p>
-                </div>
-              </button>
+              />
             ))}
           </div>
         </div>
@@ -199,11 +254,14 @@ const Chat = () => {
             <>
               <div className="h-14 border-b border-border/50 flex items-center justify-between px-4 bg-card/20">
                 <div className="flex items-center gap-3">
-                  <button onClick={() => setShowSidebar(!showSidebar)} className="md:hidden text-muted-foreground">
+                  <button
+                    onClick={() => setShowSidebar(!showSidebar)}
+                    className="md:hidden text-muted-foreground"
+                  >
                     <ArrowRightLeft className="h-4 w-4" />
                   </button>
                   <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-xs font-display font-bold">
-                    {selectedContact.name[0]}
+                    {selectedContact.name?.[0] ?? "?"}
                   </div>
                   <div>
                     <p className="text-sm font-medium">{selectedContact.name}</p>
@@ -216,34 +274,22 @@ const Chat = () => {
 
               <div className="flex-1 overflow-y-auto p-4 space-y-3">
                 {messages.map((msg, i) => (
-                  <motion.div
+                  <ChatMessage
                     key={msg.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(i * 0.02, 0.5) }}
-                    className={cn("flex", msg.sender_id === user?.id ? "justify-end" : "justify-start")}
-                  >
-                    <div
-                      className={cn(
-                        "max-w-[70%] rounded-2xl px-4 py-2.5 text-sm",
-                        msg.sender_id === user?.id
-                          ? "bg-primary text-primary-foreground rounded-br-md"
-                          : "bg-secondary text-secondary-foreground rounded-bl-md"
-                      )}
-                    >
-                      <p>{msg.text}</p>
-                      <p className={cn("text-[10px] mt-1", msg.sender_id === user?.id ? "text-primary-foreground/60" : "text-muted-foreground")}>
-                        {formatTime(msg.created_at)}
-                      </p>
-                    </div>
-                  </motion.div>
+                    msg={msg}
+                    isOwn={msg.sender_id === user?.id}
+                    index={i}
+                  />
                 ))}
                 <div ref={messagesEndRef} />
               </div>
 
               <div className="p-4 border-t border-border/50 bg-card/20">
                 <form
-                  onSubmit={(e) => { e.preventDefault(); handleSend(); }}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleSend();
+                  }}
                   className="flex gap-2"
                 >
                   <Input
@@ -252,7 +298,12 @@ const Chat = () => {
                     placeholder="Type a message..."
                     className="bg-secondary border-border focus:border-primary/50"
                   />
-                  <Button type="submit" size="icon" className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0">
+                  <Button
+                    type="submit"
+                    size="icon"
+                    disabled={sending || !newMessage.trim()}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
+                  >
                     <Send className="h-4 w-4" />
                   </Button>
                 </form>
@@ -260,7 +311,9 @@ const Chat = () => {
             </>
           ) : (
             <div className="flex-1 flex items-center justify-center">
-              <p className="text-muted-foreground">Select a conversation to start chatting</p>
+              <p className="text-muted-foreground">
+                Select a conversation to start chatting
+              </p>
             </div>
           )}
         </div>
