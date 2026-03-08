@@ -14,7 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      connections: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          requester_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          requester_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          requester_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          text: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          text: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          text?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          availability: string | null
+          avatar_url: string | null
+          bio: string | null
+          created_at: string
+          id: string
+          location: string | null
+          name: string
+          online: boolean | null
+          teaches: string[] | null
+          updated_at: string
+          user_id: string
+          wants: string[] | null
+        }
+        Insert: {
+          availability?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          name?: string
+          online?: boolean | null
+          teaches?: string[] | null
+          updated_at?: string
+          user_id: string
+          wants?: string[] | null
+        }
+        Update: {
+          availability?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string
+          id?: string
+          location?: string | null
+          name?: string
+          online?: boolean | null
+          teaches?: string[] | null
+          updated_at?: string
+          user_id?: string
+          wants?: string[] | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
