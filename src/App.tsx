@@ -10,6 +10,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { lazy, Suspense, memo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import SkillBot from "@/components/skillbot/SkillBot";
+import GlobalNoticeBanner from "@/components/GlobalNoticeBanner";
 
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
@@ -23,6 +24,8 @@ const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Feed = lazy(() => import("./pages/Feed"));
 const Referrals = lazy(() => import("./pages/Referrals"));
 const Progress = lazy(() => import("./pages/Progress"));
+const Announcements = lazy(() => import("./pages/Announcements"));
+const AdminNotices = lazy(() => import("./pages/AdminNotices"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const PageLoader = memo(() => (
@@ -63,6 +66,8 @@ const AnimatedRoutes = () => {
             <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
             <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
             <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
+            <Route path="/announcements" element={<ProtectedRoute><Announcements /></ProtectedRoute>} />
+            <Route path="/admin/notices" element={<ProtectedRoute><AdminNotices /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
@@ -91,6 +96,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <GlobalNoticeBanner />
               <AnimatedRoutes />
               <SkillBot />
             </BrowserRouter>

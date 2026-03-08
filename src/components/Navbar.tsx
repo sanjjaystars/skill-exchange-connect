@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LogOut, MessageSquare, Menu, X } from "lucide-react";
+import { LogOut, MessageSquare, Menu, X, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useState, memo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -12,6 +13,7 @@ const Navbar = memo(() => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const { unreadCount } = useNotifications();
+  const { isAdmin } = useAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const links = [
@@ -19,9 +21,11 @@ const Navbar = memo(() => {
     { to: "/progress", label: "Progress" },
     { to: "/feed", label: "Feed" },
     { to: "/sessions", label: "Sessions" },
+    { to: "/announcements", label: "News" },
     { to: "/referrals", label: "Invite" },
     { to: "/chat", label: "Chat", badge: unreadCount },
     { to: "/profile", label: "Profile" },
+    ...(isAdmin ? [{ to: "/admin/notices", label: "Admin" }] : []),
   ];
 
   const handleLogout = useCallback(async () => {
