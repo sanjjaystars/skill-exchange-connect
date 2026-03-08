@@ -9,6 +9,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { lazy, Suspense, memo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import SkillBot from "@/components/skillbot/SkillBot";
 
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
