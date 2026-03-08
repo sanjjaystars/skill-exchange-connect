@@ -10,6 +10,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import { lazy, Suspense, memo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import SkillBot from "@/components/skillbot/SkillBot";
+import GlobalNoticeBanner from "@/components/GlobalNoticeBanner";
 
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
