@@ -1,107 +1,195 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRightLeft, Users, MessageSquare, Zap, ArrowRight } from "lucide-react";
+import { ArrowRightLeft, Check } from "lucide-react";
 import { motion } from "framer-motion";
+
+const navLinks = [
+  { to: "/", label: "Home" },
+  { to: "/dashboard", label: "Dashboard" },
+  { to: "/profile", label: "Profile" },
+  { to: "/chat", label: "Chat" },
+  { to: "/login", label: "Login / Join" },
+];
 
 const Landing = () => {
   return (
     <div className="min-h-screen bg-background overflow-hidden">
       {/* Navbar */}
-      <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-md">
         <div className="container mx-auto flex items-center justify-between h-16 px-4">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center">
-              <ArrowRightLeft className="h-4 w-4 text-primary" />
-            </div>
-            <span className="font-display text-xl font-bold text-gradient">SkillSwap</span>
+          <div className="flex flex-col">
+            <span className="font-display text-xl font-bold text-foreground">SkillSwap</span>
+            <span className="text-xs text-muted-foreground -mt-0.5 hidden sm:block">Connect globally. Teach what you know. Learn what you need.</span>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" className="text-muted-foreground hover:text-foreground" asChild>
-              <Link to="/login">Log in</Link>
-            </Button>
-            <Button className="bg-primary text-primary-foreground hover:bg-primary/90" asChild>
-              <Link to="/login">Get Started</Link>
-            </Button>
+          <div className="flex items-center gap-2">
+            {navLinks.map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                className="px-4 py-1.5 rounded-full text-sm font-medium border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-all duration-200"
+              >
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="relative pt-32 pb-20 px-4">
-        {/* Background effects */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl animate-pulse-glow" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-accent/5 rounded-full blur-3xl animate-pulse-glow" style={{ animationDelay: "1.5s" }} />
-        </div>
+      <section className="relative pt-28 pb-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
+            {/* Left column */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-card border border-border text-sm text-muted-foreground mb-8">
+                <span className="h-2 w-2 rounded-full bg-accent" />
+                Real-time skill exchange idea demo
+              </div>
 
-        <div className="container mx-auto text-center relative z-10 max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7 }}
-          >
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-sm font-medium mb-8">
-              <Zap className="h-3.5 w-3.5" />
-              Trade skills, grow together
-            </div>
+              <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] font-display font-bold tracking-tight leading-tight mb-6">
+                Match with people who can{" "}
+                <span className="text-gradient">teach you what you need</span>
+              </h1>
 
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl font-display font-bold tracking-tight mb-6">
-              Learn anything by{" "}
-              <span className="text-gradient">teaching</span>{" "}
-              what you know
-            </h1>
+              <p className="text-base text-muted-foreground max-w-lg mb-8 leading-relaxed">
+                SkillSwap helps learners and mentors connect through mutual skill exchange.
+                If you know Python and want C, the platform finds someone with the opposite need and opens a direct chat.
+              </p>
 
-            <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed">
-              SkillSwap connects you with people around the world for knowledge exchange.
-              You teach what you know, learn what you want — no money needed.
-            </p>
+              <div className="flex flex-wrap gap-3 mb-6">
+                <Button className="rounded-full bg-primary text-primary-foreground hover:bg-primary/90 px-6" asChild>
+                  <Link to="/dashboard">Start Matching</Link>
+                </Button>
+                <Button variant="outline" className="rounded-full border-border hover:border-foreground/30 px-6" asChild>
+                  <Link to="/login">Join Free</Link>
+                </Button>
+                <Button variant="outline" className="rounded-full border-border hover:border-foreground/30 px-6" asChild>
+                  <Link to="/login">Add Demo User</Link>
+                </Button>
+              </div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-8 text-base" asChild>
-                <Link to="/login">
-                  Start Swapping
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="outline" className="h-12 px-8 text-base border-border hover:border-primary/50 hover:bg-primary/5" asChild>
-                <Link to="/dashboard">Explore Matches</Link>
-              </Button>
-            </div>
-          </motion.div>
+              <div className="flex flex-wrap gap-2">
+                {["SQL Backend Ready", "Matching Engine", "1:1 Chat UI", "Profile Builder"].map((tag) => (
+                  <span
+                    key={tag}
+                    className="px-3 py-1 rounded-full text-xs border border-border text-muted-foreground"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Right column — match preview + activity */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="space-y-4"
+            >
+              {/* Match preview card */}
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-xs text-muted-foreground mb-1">Top recommended match</p>
+                    <h3 className="font-display text-xl font-bold">
+                      Sanjjay <span className="text-muted-foreground mx-1">↔</span> Arun
+                    </h3>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-accent/15 text-accent text-sm font-semibold border border-accent/30">
+                    75% match
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Left user */}
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">You teach</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {["Python", "Web Basics", "Problem Solving"].map((s) => (
+                          <span key={s} className="px-3 py-1 rounded-full text-xs bg-secondary border border-border text-foreground">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">You want to learn</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {["C", "DSA"].map((s) => (
+                          <span key={s} className="px-3 py-1 rounded-full text-xs bg-secondary border border-border text-foreground">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  {/* Right user */}
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">Arun teaches</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {["C", "C++", "Pointers"].map((s) => (
+                          <span key={s} className="px-3 py-1 rounded-full text-xs bg-secondary border border-border text-foreground">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-2">Arun wants to learn</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {["Python", "JavaScript"].map((s) => (
+                          <span key={s} className="px-3 py-1 rounded-full text-xs bg-secondary border border-border text-foreground">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Recent activity */}
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-display text-lg font-bold">Recent activity</h3>
+                  <span className="text-xs text-muted-foreground">Live demo state</span>
+                </div>
+                <div className="space-y-2">
+                  {["Welcome to SkillSwap", "Arun accepted your connection"].map((msg) => (
+                    <div key={msg} className="px-4 py-3 rounded-xl bg-secondary/60 text-sm text-foreground">
+                      {msg}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </motion.div>
+          </div>
         </div>
       </section>
 
       {/* How it works */}
-      <section className="py-24 px-4">
-        <div className="container mx-auto max-w-5xl">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-3xl sm:text-4xl font-display font-bold text-center mb-16"
-          >
-            How it works
-          </motion.h2>
-
-          <div className="grid md:grid-cols-3 gap-8">
+      <section className="py-16 px-4">
+        <div className="container mx-auto max-w-6xl">
+          <div className="grid md:grid-cols-3 gap-6">
             {[
               {
-                icon: Users,
                 title: "Create your profile",
-                desc: "List the skills you can teach and the ones you want to learn.",
-                color: "primary",
+                desc: "Add the skills you can teach, the skills you want to learn, your bio, and your availability.",
               },
               {
-                icon: Zap,
-                title: "Get matched",
-                desc: "Our algorithm finds the best skill-swap partners for you.",
-                color: "accent",
+                title: "Get smart matches",
+                desc: "The app finds users whose teaching skills align with your learning goals and vice versa.",
               },
               {
-                icon: MessageSquare,
-                title: "Start learning",
-                desc: "Connect via chat and schedule your knowledge exchange sessions.",
-                color: "primary",
+                title: "Chat and exchange",
+                desc: "Once matched, users can connect through chat and schedule learning sessions together.",
               },
             ].map((step, i) => (
               <motion.div
@@ -109,11 +197,11 @@ const Landing = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-                className="glass rounded-xl p-6 text-center group hover:glow-primary transition-all duration-500"
+                transition={{ delay: i * 0.1 }}
+                className="bg-card rounded-2xl border border-border p-6"
               >
-                <div className={`h-14 w-14 rounded-xl bg-${step.color}/15 flex items-center justify-center mx-auto mb-5`}>
-                  <step.icon className={`h-6 w-6 text-${step.color}`} />
+                <div className="h-10 w-10 rounded-xl bg-primary/15 flex items-center justify-center mb-5">
+                  <Check className="h-5 w-5 text-primary" />
                 </div>
                 <h3 className="font-display text-lg font-semibold mb-2">{step.title}</h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
@@ -123,33 +211,8 @@ const Landing = () => {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-24 px-4">
-        <div className="container mx-auto max-w-3xl text-center">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            className="glass rounded-2xl p-12 glow-primary"
-          >
-            <h2 className="text-3xl sm:text-4xl font-display font-bold mb-4">
-              Ready to <span className="text-gradient">swap</span>?
-            </h2>
-            <p className="text-muted-foreground mb-8 text-lg">
-              Join thousands of learners exchanging skills every day.
-            </p>
-            <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 h-12 px-10 text-base" asChild>
-              <Link to="/login">
-                Join SkillSwap
-                <ArrowRight className="h-4 w-4 ml-2" />
-              </Link>
-            </Button>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Footer */}
-      <footer className="border-t border-border/50 py-8 px-4">
+      <footer className="border-t border-border/40 py-8 px-4">
         <div className="container mx-auto flex items-center justify-between text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
             <ArrowRightLeft className="h-4 w-4 text-primary" />

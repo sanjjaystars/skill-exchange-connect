@@ -1,47 +1,43 @@
 import { Link, useLocation } from "react-router-dom";
-import { ArrowRightLeft, MessageSquare, User, LayoutDashboard, LogOut } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Navbar = () => {
   const location = useLocation();
 
   const links = [
-    { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { to: "/chat", label: "Chat", icon: MessageSquare },
-    { to: "/profile", label: "Profile", icon: User },
+    { to: "/dashboard", label: "Dashboard" },
+    { to: "/chat", label: "Chat" },
+    { to: "/profile", label: "Profile" },
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass border-b border-border/50">
+    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-md">
       <div className="container mx-auto flex items-center justify-between h-16 px-4">
-        <Link to="/" className="flex items-center gap-2 group">
-          <div className="h-8 w-8 rounded-lg bg-primary/20 flex items-center justify-center group-hover:glow-primary transition-all duration-300">
-            <ArrowRightLeft className="h-4 w-4 text-primary" />
-          </div>
-          <span className="font-display text-xl font-bold text-gradient">SkillSwap</span>
+        <Link to="/" className="flex flex-col group">
+          <span className="font-display text-xl font-bold text-foreground">SkillSwap</span>
         </Link>
 
-        <div className="flex items-center gap-1">
-          {links.map(({ to, label, icon: Icon }) => (
+        <div className="flex items-center gap-2">
+          {links.map(({ to, label }) => (
             <Link
               key={to}
               to={to}
               className={cn(
-                "flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200",
+                "px-4 py-1.5 rounded-full text-sm font-medium border transition-all duration-200",
                 location.pathname === to
-                  ? "bg-primary/15 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  ? "border-primary/50 text-primary bg-primary/10"
+                  : "border-border text-muted-foreground hover:text-foreground hover:border-foreground/30"
               )}
             >
-              <Icon className="h-4 w-4" />
-              <span className="hidden sm:inline">{label}</span>
+              {label}
             </Link>
           ))}
           <Link
             to="/login"
-            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary transition-all duration-200 ml-2"
+            className="px-4 py-1.5 rounded-full text-sm font-medium border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-all duration-200 flex items-center gap-1.5"
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Logout</span>
           </Link>
         </div>
