@@ -96,12 +96,16 @@ const Sessions = () => {
 
   const completeSession = async (sessionId: string) => {
     try {
+      const session = sessions.find(s => s.id === sessionId);
       const { error } = await supabase
         .from("sessions")
         .update({ status: "completed", completed_at: new Date().toISOString() })
         .eq("id", sessionId);
       if (error) throw error;
-      toast.success("Session marked as completed!");
+      // Award points: 50 for teaching, 30 for learning
+      const isTeacher = session?.teacher_id === user?.id;
+      await recordActivity(isTeacher ? "teaching_session" : "learning_session", isTeacher ? 50 : 30);
+      toast.success(`Session completed! +${isTeacher ? 50 : 30} points`);
       fetchData();
     } catch (err) {
       console.error(err);
