@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,9 +7,12 @@ import { ArrowRightLeft, Mail, Lock, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [searchParams] = useSearchParams();
+  const refCode = searchParams.get("ref");
+  const [isSignUp, setIsSignUp] = useState(!!refCode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -26,6 +29,19 @@ const Login = () => {
       if (error) {
         toast.error(error.message);
       } else {
+        // Process referral if ref code exists
+        if (refCode) {
+          try {
+            const { data: { user: newUser } } = await supabase.auth.getUser();
+            if (newUser) {
+              await supabase.rpc("process_referral", {
+                p_referral_code: refCode,
+                p_new_user_id: newUser.id,
+              });
+              toast.success("Referral applied! Your friend earned bonus points.");
+            }
+          } catch {}
+        }
         toast.success("Account created! Check your email to confirm, or sign in directly.");
         navigate("/dashboard");
       }
@@ -53,6 +69,11 @@ const Login = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
+        {refCode && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 text-center">
+            <p className="text-sm text-primary font-medium">🎉 You've been invited! Sign up to get started.</p>
+          </div>
+        )}
         <Link to="/" className="flex items-center justify-center gap-2 mb-8">
           <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
             <ArrowRightLeft className="h-5 w-5 text-primary" />

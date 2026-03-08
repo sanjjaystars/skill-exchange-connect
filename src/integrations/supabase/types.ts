@@ -234,6 +234,8 @@ export type Database = {
           location: string | null
           name: string
           online: boolean | null
+          referral_code: string | null
+          referred_by: string | null
           teaches: string[] | null
           updated_at: string
           user_id: string
@@ -248,6 +250,8 @@ export type Database = {
           location?: string | null
           name?: string
           online?: boolean | null
+          referral_code?: string | null
+          referred_by?: string | null
           teaches?: string[] | null
           updated_at?: string
           user_id: string
@@ -262,10 +266,39 @@ export type Database = {
           location?: string | null
           name?: string
           online?: boolean | null
+          referral_code?: string | null
+          referred_by?: string | null
           teaches?: string[] | null
           updated_at?: string
           user_id?: string
           wants?: string[] | null
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          referred_user_id: string
+          referrer_id: string
+          reward_points: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          referred_user_id: string
+          referrer_id: string
+          reward_points?: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          referred_user_id?: string
+          referrer_id?: string
+          reward_points?: number
+          status?: string
         }
         Relationships: []
       }
@@ -376,7 +409,12 @@ export type Database = {
     }
     Functions: {
       get_leaderboard: { Args: { p_period?: string }; Returns: Json }
+      get_referral_stats: { Args: { p_user_id: string }; Returns: Json }
       get_user_reputation: { Args: { target_user_id: string }; Returns: Json }
+      process_referral: {
+        Args: { p_new_user_id: string; p_referral_code: string }
+        Returns: Json
+      }
       record_activity: {
         Args: { p_activity_type: string; p_points: number; p_user_id: string }
         Returns: Json
