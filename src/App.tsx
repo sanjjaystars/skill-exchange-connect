@@ -12,6 +12,8 @@ import { AnimatePresence, motion } from "framer-motion";
 
 const Landing = lazy(() => import("./pages/Landing"));
 const Login = lazy(() => import("./pages/Login"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Chat = lazy(() => import("./pages/Chat"));
