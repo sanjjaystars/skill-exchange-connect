@@ -5,6 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useState, memo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import logo from "@/assets/logo.png";
 
 const Navbar = memo(() => {
   const location = useLocation();
