@@ -13,6 +13,7 @@ const Navbar = memo(() => {
   const navigate = useNavigate();
   const { signOut, user } = useAuth();
   const { unreadCount } = useNotifications();
+  const { isAdmin } = useAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const links = [
@@ -20,9 +21,11 @@ const Navbar = memo(() => {
     { to: "/progress", label: "Progress" },
     { to: "/feed", label: "Feed" },
     { to: "/sessions", label: "Sessions" },
+    { to: "/announcements", label: "News" },
     { to: "/referrals", label: "Invite" },
     { to: "/chat", label: "Chat", badge: unreadCount },
     { to: "/profile", label: "Profile" },
+    ...(isAdmin ? [{ to: "/admin/notices", label: "Admin" }] : []),
   ];
 
   const handleLogout = useCallback(async () => {
