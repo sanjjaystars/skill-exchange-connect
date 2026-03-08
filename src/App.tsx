@@ -19,6 +19,7 @@ const Sessions = lazy(() => import("./pages/Sessions"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Feed = lazy(() => import("./pages/Feed"));
 const Referrals = lazy(() => import("./pages/Referrals"));
+const Progress = lazy(() => import("./pages/Progress"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const PageLoader = memo(() => (
@@ -56,6 +57,7 @@ const AnimatedRoutes = () => {
             <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
             <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
             <Route path="/referrals" element={<ProtectedRoute><Referrals /></ProtectedRoute>} />
+            <Route path="/progress" element={<ProtectedRoute><Progress /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

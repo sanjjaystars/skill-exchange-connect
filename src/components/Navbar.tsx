@@ -16,9 +16,9 @@ const Navbar = memo(() => {
 
   const links = [
     { to: "/dashboard", label: "Dashboard" },
+    { to: "/progress", label: "Progress" },
     { to: "/feed", label: "Feed" },
     { to: "/sessions", label: "Sessions" },
-    { to: "/leaderboard", label: "Board" },
     { to: "/referrals", label: "Invite" },
     { to: "/chat", label: "Chat", badge: unreadCount },
     { to: "/profile", label: "Profile" },
