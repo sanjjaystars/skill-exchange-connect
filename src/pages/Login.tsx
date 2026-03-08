@@ -69,6 +69,11 @@ const Login = () => {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
+        {refCode && (
+          <div className="mb-4 px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 text-center">
+            <p className="text-sm text-primary font-medium">🎉 You've been invited! Sign up to get started.</p>
+          </div>
+        )}
         <Link to="/" className="flex items-center justify-center gap-2 mb-8">
           <div className="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center">
             <ArrowRightLeft className="h-5 w-5 text-primary" />
