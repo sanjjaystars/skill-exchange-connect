@@ -92,6 +92,7 @@ const App = () => (
             <Sonner />
             <BrowserRouter>
               <AnimatedRoutes />
+              <SkillBot />
             </BrowserRouter>
           </TooltipProvider>
         </NotificationProvider>
