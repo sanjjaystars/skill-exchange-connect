@@ -18,6 +18,7 @@ const Chat = lazy(() => import("./pages/Chat"));
 const Sessions = lazy(() => import("./pages/Sessions"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Feed = lazy(() => import("./pages/Feed"));
+const Referrals = lazy(() => import("./pages/Referrals"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const PageLoader = memo(() => (
