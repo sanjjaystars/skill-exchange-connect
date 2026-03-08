@@ -41,6 +41,33 @@ export type Database = {
         }
         Relationships: []
       }
+      availability_slots: {
+        Row: {
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          start_time: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          start_time: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          start_time?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       connections: {
         Row: {
           created_at: string
@@ -344,27 +371,42 @@ export type Database = {
         Row: {
           completed_at: string | null
           created_at: string
+          duration_minutes: number | null
+          end_time: string | null
           id: string
           learner_id: string
+          notes: string | null
+          scheduled_date: string | null
           skill: string
+          start_time: string | null
           status: string
           teacher_id: string
         }
         Insert: {
           completed_at?: string | null
           created_at?: string
+          duration_minutes?: number | null
+          end_time?: string | null
           id?: string
           learner_id: string
+          notes?: string | null
+          scheduled_date?: string | null
           skill?: string
+          start_time?: string | null
           status?: string
           teacher_id: string
         }
         Update: {
           completed_at?: string | null
           created_at?: string
+          duration_minutes?: number | null
+          end_time?: string | null
           id?: string
           learner_id?: string
+          notes?: string | null
+          scheduled_date?: string | null
           skill?: string
+          start_time?: string | null
           status?: string
           teacher_id?: string
         }
@@ -408,6 +450,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      check_booking_conflict: {
+        Args: {
+          p_date: string
+          p_end: string
+          p_exclude_session_id?: string
+          p_start: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
       get_leaderboard: { Args: { p_period?: string }; Returns: Json }
       get_referral_stats: { Args: { p_user_id: string }; Returns: Json }
       get_user_reputation: { Args: { target_user_id: string }; Returns: Json }
