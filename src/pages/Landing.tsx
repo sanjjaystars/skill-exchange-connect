@@ -125,7 +125,7 @@ const Landing = () => {
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1.5">Arun teaches</p>
+                      <p className="text-xs text-muted-foreground mb-1.5">Prince teaches</p>
                       <div className="flex flex-wrap gap-1">
                         {["C", "C++"].map((s) => (
                           <span key={s} className="px-2 py-0.5 rounded-full text-[11px] bg-secondary border border-border text-foreground">
