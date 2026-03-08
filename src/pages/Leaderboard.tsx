@@ -33,7 +33,7 @@ const Leaderboard = () => {
       try {
         const { data, error } = await supabase.rpc("get_leaderboard", { p_period: period });
         if (error) throw error;
-        setEntries((data as LeaderboardEntry[]) ?? []);
+        setEntries((data as unknown as LeaderboardEntry[]) ?? []);
       } catch (err) {
         console.error("Failed to fetch leaderboard:", err);
       } finally {
