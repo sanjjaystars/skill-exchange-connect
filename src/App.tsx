@@ -14,6 +14,7 @@ const Login = lazy(() => import("./pages/Login"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Chat = lazy(() => import("./pages/Chat"));
+const Sessions = lazy(() => import("./pages/Sessions"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const PageLoader = () => (
