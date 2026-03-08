@@ -96,6 +96,7 @@ const App = () => (
             <Toaster />
             <Sonner />
             <BrowserRouter>
+              <GlobalNoticeBanner />
               <AnimatedRoutes />
               <SkillBot />
             </BrowserRouter>
