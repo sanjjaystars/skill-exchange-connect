@@ -155,7 +155,7 @@ const Landing = () => {
                   <span className="text-[10px] text-muted-foreground">Live</span>
                 </div>
                 <div className="space-y-1.5">
-                  {["Welcome to SkillSwap", "Arun accepted your connection"].map((msg) => (
+                  {["Welcome to SkillSwap", "Prince accepted your connection"].map((msg) => (
                     <div key={msg} className="px-3 py-2.5 rounded-xl bg-secondary/60 text-sm text-foreground">
                       {msg}
                     </div>
