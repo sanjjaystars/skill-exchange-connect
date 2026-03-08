@@ -25,6 +25,7 @@ interface SessionRow {
 
 const Sessions = () => {
   const { user } = useAuth();
+  const { recordActivity } = useGamification();
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [reviewedSessionIds, setReviewedSessionIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
