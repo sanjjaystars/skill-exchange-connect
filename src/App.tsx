@@ -53,6 +53,7 @@ const App = () => (
                   <Route path="/chat/:userId" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
                   <Route path="/sessions" element={<ProtectedRoute><Sessions /></ProtectedRoute>} />
                   <Route path="/leaderboard" element={<ProtectedRoute><Leaderboard /></ProtectedRoute>} />
+                  <Route path="/feed" element={<ProtectedRoute><Feed /></ProtectedRoute>} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </Suspense>
