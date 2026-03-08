@@ -19,6 +19,7 @@ const Sessions = lazy(() => import("./pages/Sessions"));
 const Leaderboard = lazy(() => import("./pages/Leaderboard"));
 const Feed = lazy(() => import("./pages/Feed"));
 const Referrals = lazy(() => import("./pages/Referrals"));
+const Progress = lazy(() => import("./pages/Progress"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const PageLoader = memo(() => (
