@@ -14,6 +14,7 @@ const Navbar = () => {
 
   const links = [
     { to: "/dashboard", label: "Dashboard" },
+    { to: "/feed", label: "Feed" },
     { to: "/sessions", label: "Sessions" },
     { to: "/leaderboard", label: "Leaderboard" },
     { to: "/chat", label: "Chat", badge: unreadCount },
