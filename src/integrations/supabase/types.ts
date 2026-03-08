@@ -65,24 +65,68 @@ export type Database = {
         }
         Relationships: []
       }
+      message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       messages: {
         Row: {
           created_at: string
+          file_name: string | null
+          file_url: string | null
           id: string
+          message_type: string
+          read_at: string | null
           receiver_id: string
           sender_id: string
           text: string
         }
         Insert: {
           created_at?: string
+          file_name?: string | null
+          file_url?: string | null
           id?: string
+          message_type?: string
+          read_at?: string | null
           receiver_id: string
           sender_id: string
           text: string
         }
         Update: {
           created_at?: string
+          file_name?: string | null
+          file_url?: string | null
           id?: string
+          message_type?: string
+          read_at?: string | null
           receiver_id?: string
           sender_id?: string
           text?: string
