@@ -1,15 +1,23 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
 
   const links = [
     { to: "/dashboard", label: "Dashboard" },
     { to: "/chat", label: "Chat" },
     { to: "/profile", label: "Profile" },
   ];
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate("/login");
+  };
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-md">
@@ -33,13 +41,13 @@ const Navbar = () => {
               {label}
             </Link>
           ))}
-          <Link
-            to="/login"
+          <button
+            onClick={handleLogout}
             className="px-4 py-1.5 rounded-full text-sm font-medium border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-all duration-200 flex items-center gap-1.5"
           >
             <LogOut className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Logout</span>
-          </Link>
+          </button>
         </div>
       </div>
     </nav>
