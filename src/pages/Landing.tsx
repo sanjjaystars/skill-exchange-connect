@@ -92,7 +92,7 @@ const Landing = () => {
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Top recommended match</p>
                     <h3 className="font-display text-lg sm:text-xl font-bold">
-                      Sanjjay <span className="text-muted-foreground mx-1">↔</span> Arun
+                      Sanjjay <span className="text-muted-foreground mx-1">↔</span> Prince
                     </h3>
                   </div>
                   <span className="px-2.5 py-1 rounded-full bg-accent/15 text-accent text-xs sm:text-sm font-semibold border border-accent/30">
