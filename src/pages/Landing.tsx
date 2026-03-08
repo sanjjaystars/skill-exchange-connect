@@ -92,7 +92,7 @@ const Landing = () => {
                   <div>
                     <p className="text-xs text-muted-foreground mb-1">Top recommended match</p>
                     <h3 className="font-display text-lg sm:text-xl font-bold">
-                      Sanjjay <span className="text-muted-foreground mx-1">↔</span> Arun
+                      Sanjjay <span className="text-muted-foreground mx-1">↔</span> Prince
                     </h3>
                   </div>
                   <span className="px-2.5 py-1 rounded-full bg-accent/15 text-accent text-xs sm:text-sm font-semibold border border-accent/30">
@@ -125,7 +125,7 @@ const Landing = () => {
                   </div>
                   <div className="space-y-3">
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1.5">Arun teaches</p>
+                      <p className="text-xs text-muted-foreground mb-1.5">Prince teaches</p>
                       <div className="flex flex-wrap gap-1">
                         {["C", "C++"].map((s) => (
                           <span key={s} className="px-2 py-0.5 rounded-full text-[11px] bg-secondary border border-border text-foreground">
@@ -135,7 +135,7 @@ const Landing = () => {
                       </div>
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mb-1.5">Arun wants</p>
+                      <p className="text-xs text-muted-foreground mb-1.5">Prince wants</p>
                       <div className="flex flex-wrap gap-1">
                         {["Python", "JS"].map((s) => (
                           <span key={s} className="px-2 py-0.5 rounded-full text-[11px] bg-secondary border border-border text-foreground">
@@ -155,7 +155,7 @@ const Landing = () => {
                   <span className="text-[10px] text-muted-foreground">Live</span>
                 </div>
                 <div className="space-y-1.5">
-                  {["Welcome to SkillSwap", "Arun accepted your connection"].map((msg) => (
+                  {["Welcome to SkillSwap", "Prince accepted your connection"].map((msg) => (
                     <div key={msg} className="px-3 py-2.5 rounded-xl bg-secondary/60 text-sm text-foreground">
                       {msg}
                     </div>
