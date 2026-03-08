@@ -107,12 +107,80 @@ export type Database = {
         }
         Relationships: []
       }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          rating: number
+          reviewed_user_id: string
+          reviewer_id: string
+          session_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating: number
+          reviewed_user_id: string
+          reviewer_id: string
+          session_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          rating?: number
+          reviewed_user_id?: string
+          reviewer_id?: string
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      sessions: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          id: string
+          learner_id: string
+          skill: string
+          status: string
+          teacher_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          learner_id: string
+          skill?: string
+          status?: string
+          teacher_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          id?: string
+          learner_id?: string
+          skill?: string
+          status?: string
+          teacher_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_reputation: { Args: { target_user_id: string }; Returns: Json }
     }
     Enums: {
       [_ in never]: never
