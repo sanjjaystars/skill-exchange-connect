@@ -1,1 +1,4 @@
 project_id = "jjkoshqmyokdnguffpyc"
+
+[functions.skillbot-chat]
+verify_jwt = false
