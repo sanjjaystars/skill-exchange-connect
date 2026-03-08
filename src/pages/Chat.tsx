@@ -3,11 +3,12 @@ import { useParams } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Send, ArrowRightLeft } from "lucide-react";
+import { Send, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/contexts/NotificationContext";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Message = Tables<"messages">;
@@ -27,8 +28,8 @@ const ChatContactItem = ({
     className={cn(
       "w-full flex items-center gap-3 p-3 transition-all duration-150 text-left",
       isSelected
-        ? "bg-primary/10 border-r-2 border-primary"
-        : "hover:bg-secondary/50"
+        ? "bg-primary/10 border-l-2 border-primary"
+        : "hover:bg-secondary/50 border-l-2 border-transparent"
     )}
   >
     <div className="relative shrink-0">
@@ -42,7 +43,7 @@ const ChatContactItem = ({
     <div className="min-w-0 flex-1">
       <p className="text-sm font-medium truncate">{contact.name}</p>
       <p className="text-xs text-muted-foreground truncate">
-        {(contact.teaches ?? []).slice(0, 2).join(", ")}
+        {(contact.teaches ?? []).slice(0, 2).join(", ") || "No skills listed"}
       </p>
     </div>
   </button>
@@ -51,30 +52,23 @@ const ChatContactItem = ({
 const ChatMessage = ({
   msg,
   isOwn,
-  index,
 }: {
   msg: Message;
   isOwn: boolean;
-  index: number;
 }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    transition={{ delay: Math.min(index * 0.02, 0.5) }}
-    className={cn("flex", isOwn ? "justify-end" : "justify-start")}
-  >
+  <div className={cn("flex", isOwn ? "justify-end" : "justify-start")}>
     <div
       className={cn(
-        "max-w-[70%] rounded-2xl px-4 py-2.5 text-sm",
+        "max-w-[80%] sm:max-w-[70%] rounded-2xl px-3.5 py-2 text-sm",
         isOwn
           ? "bg-primary text-primary-foreground rounded-br-md"
           : "bg-secondary text-secondary-foreground rounded-bl-md"
       )}
     >
-      <p>{msg.text}</p>
+      <p className="break-words">{msg.text}</p>
       <p
         className={cn(
-          "text-[10px] mt-1",
+          "text-[10px] mt-0.5",
           isOwn ? "text-primary-foreground/60" : "text-muted-foreground"
         )}
       >
@@ -84,25 +78,30 @@ const ChatMessage = ({
         })}
       </p>
     </div>
-  </motion.div>
+  </div>
 );
 
 const Chat = () => {
   const { userId } = useParams();
   const { user } = useAuth();
+  const { clearUnread } = useNotifications();
   const [contacts, setContacts] = useState<Profile[]>([]);
   const [selectedUserId, setSelectedUserId] = useState<string | null>(
     userId ?? null
   );
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
-  const [showSidebar, setShowSidebar] = useState(true);
+  const [showSidebar, setShowSidebar] = useState(!userId);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Clear notifications when viewing chat
+  useEffect(() => {
+    if (selectedUserId) clearUnread(selectedUserId);
+  }, [selectedUserId, clearUnread]);
+
   const fetchContacts = useCallback(async () => {
     if (!user) return;
-
     try {
       const [sentRes, receivedRes, connectionsRes] = await Promise.all([
         supabase.from("messages").select("receiver_id").eq("sender_id", user.id),
@@ -118,14 +117,12 @@ const Chat = () => {
         if (c.receiver_id !== user.id) userIds.add(c.receiver_id);
       });
       if (userId) userIds.add(userId);
-
       if (userIds.size === 0) return;
 
       const { data: profiles } = await supabase
         .from("profiles")
         .select("*")
         .in("user_id", Array.from(userIds));
-
       if (profiles) setContacts(profiles);
     } catch (err) {
       console.error("Failed to fetch contacts:", err);
@@ -138,7 +135,6 @@ const Chat = () => {
 
   useEffect(() => {
     if (!user || !selectedUserId) return;
-
     let isMounted = true;
 
     const fetchMessages = async () => {
@@ -150,7 +146,6 @@ const Chat = () => {
             `and(sender_id.eq.${user.id},receiver_id.eq.${selectedUserId}),and(sender_id.eq.${selectedUserId},receiver_id.eq.${user.id})`
           )
           .order("created_at", { ascending: true });
-
         if (data && isMounted) setMessages(data);
       } catch (err) {
         console.error("Failed to fetch messages:", err);
@@ -171,7 +166,6 @@ const Chat = () => {
             (msg.sender_id === selectedUserId && msg.receiver_id === user.id)
           ) {
             setMessages((prev) => {
-              // Prevent duplicates
               if (prev.some((m) => m.id === msg.id)) return prev;
               return [...prev, msg];
             });
@@ -192,7 +186,6 @@ const Chat = () => {
 
   const handleSend = async () => {
     if (!newMessage.trim() || !user || !selectedUserId || sending) return;
-
     setSending(true);
     try {
       const { error } = await supabase.from("messages").insert({
@@ -214,13 +207,13 @@ const Chat = () => {
     <div className="h-screen bg-background flex flex-col">
       <Navbar />
 
-      <div className="flex flex-1 pt-16 overflow-hidden">
-        {/* Contacts sidebar */}
+      <div className="flex flex-1 pt-14 overflow-hidden">
+        {/* Contacts sidebar — full screen on mobile when no chat selected */}
         <div
           className={cn(
-            "w-80 border-r border-border/50 bg-card/30 flex-shrink-0 flex flex-col",
-            "max-md:absolute max-md:inset-y-16 max-md:left-0 max-md:z-40 max-md:w-72",
-            !showSidebar && "max-md:hidden"
+            "w-full sm:w-72 md:w-80 border-r border-border/50 bg-card/30 flex-shrink-0 flex flex-col",
+            // On mobile: show sidebar when showSidebar is true, hide when chat is selected
+            selectedUserId && !showSidebar ? "hidden sm:flex" : "flex"
           )}
         >
           <div className="p-4 border-b border-border/50">
@@ -248,43 +241,46 @@ const Chat = () => {
           </div>
         </div>
 
-        {/* Chat area */}
-        <div className="flex-1 flex flex-col min-w-0">
+        {/* Chat area — hidden on mobile when sidebar is showing */}
+        <div
+          className={cn(
+            "flex-1 flex flex-col min-w-0",
+            showSidebar && !selectedUserId ? "hidden sm:flex" : "flex",
+            selectedUserId && showSidebar ? "hidden sm:flex" : ""
+          )}
+        >
           {selectedContact ? (
             <>
-              <div className="h-14 border-b border-border/50 flex items-center justify-between px-4 bg-card/20">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => setShowSidebar(!showSidebar)}
-                    className="md:hidden text-muted-foreground"
-                  >
-                    <ArrowRightLeft className="h-4 w-4" />
-                  </button>
-                  <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-xs font-display font-bold">
-                    {selectedContact.name?.[0] ?? "?"}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">{selectedContact.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {selectedContact.online ? "Online" : "Offline"}
-                    </p>
-                  </div>
+              <div className="h-14 border-b border-border/50 flex items-center gap-3 px-4 bg-card/20">
+                <button
+                  onClick={() => setShowSidebar(true)}
+                  className="sm:hidden text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </button>
+                <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-xs font-display font-bold">
+                  {selectedContact.name?.[0] ?? "?"}
+                </div>
+                <div>
+                  <p className="text-sm font-medium">{selectedContact.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {selectedContact.online ? "Online" : "Offline"}
+                  </p>
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-4 space-y-3">
-                {messages.map((msg, i) => (
+              <div className="flex-1 overflow-y-auto p-4 space-y-2">
+                {messages.map((msg) => (
                   <ChatMessage
                     key={msg.id}
                     msg={msg}
                     isOwn={msg.sender_id === user?.id}
-                    index={i}
                   />
                 ))}
                 <div ref={messagesEndRef} />
               </div>
 
-              <div className="p-4 border-t border-border/50 bg-card/20">
+              <div className="p-3 sm:p-4 border-t border-border/50 bg-card/20">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -296,13 +292,13 @@ const Chat = () => {
                     value={newMessage}
                     onChange={(e) => setNewMessage(e.target.value)}
                     placeholder="Type a message..."
-                    className="bg-secondary border-border focus:border-primary/50"
+                    className="bg-secondary border-border focus:border-primary/50 h-10"
                   />
                   <Button
                     type="submit"
                     size="icon"
                     disabled={sending || !newMessage.trim()}
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0 h-10 w-10"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
@@ -310,8 +306,8 @@ const Chat = () => {
               </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center">
-              <p className="text-muted-foreground">
+            <div className="flex-1 flex items-center justify-center p-4">
+              <p className="text-muted-foreground text-center">
                 Select a conversation to start chatting
               </p>
             </div>
