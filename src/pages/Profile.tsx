@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { MapPin, Clock, Edit3, Save, Plus, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -15,6 +15,7 @@ const Profile = () => {
   const { user } = useAuth();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [newTeachSkill, setNewTeachSkill] = useState("");
   const [newWantSkill, setNewWantSkill] = useState("");
   const [profile, setProfile] = useState({
@@ -26,18 +27,20 @@ const Profile = () => {
     availability: "",
   });
 
-  useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
-      const { data } = await supabase
+  const fetchProfile = useCallback(async () => {
+    if (!user) return;
+    try {
+      const { data, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("user_id", user.id)
         .single();
 
+      if (error) throw error;
+
       if (data) {
         setProfile({
-          name: data.name,
+          name: data.name || "",
           location: data.location ?? "",
           bio: data.bio ?? "",
           teaches: data.teaches ?? [],
@@ -45,30 +48,42 @@ const Profile = () => {
           availability: data.availability ?? "",
         });
       }
+    } catch (err) {
+      console.error("Failed to fetch profile:", err);
+      toast.error("Failed to load profile");
+    } finally {
       setLoading(false);
-    };
-    fetchProfile();
+    }
   }, [user]);
 
-  const handleSave = async () => {
-    if (!user) return;
-    const { error } = await supabase
-      .from("profiles")
-      .update({
-        name: profile.name,
-        location: profile.location,
-        bio: profile.bio,
-        teaches: profile.teaches,
-        wants: profile.wants,
-        availability: profile.availability,
-      })
-      .eq("user_id", user.id);
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
-    if (error) {
-      toast.error("Failed to save profile");
-    } else {
+  const handleSave = async () => {
+    if (!user || saving) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({
+          name: profile.name,
+          location: profile.location,
+          bio: profile.bio,
+          teaches: profile.teaches,
+          wants: profile.wants,
+          availability: profile.availability,
+        })
+        .eq("user_id", user.id);
+
+      if (error) throw error;
       toast.success("Profile saved!");
       setEditing(false);
+    } catch (err) {
+      console.error("Failed to save profile:", err);
+      toast.error("Failed to save profile");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -134,11 +149,12 @@ const Profile = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => editing ? handleSave() : setEditing(true)}
+              onClick={() => (editing ? handleSave() : setEditing(true))}
+              disabled={saving}
               className="border-border hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
             >
               {editing ? <Save className="h-4 w-4 mr-1.5" /> : <Edit3 className="h-4 w-4 mr-1.5" />}
-              {editing ? "Save" : "Edit"}
+              {saving ? "Saving..." : editing ? "Save" : "Edit"}
             </Button>
           </div>
 
