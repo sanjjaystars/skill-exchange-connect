@@ -1,8 +1,9 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LogOut, MessageSquare, Menu, X } from "lucide-react";
+import { LogOut, MessageSquare, Menu, X, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationContext";
+import { useAdmin } from "@/hooks/useAdmin";
 import { useState, memo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
