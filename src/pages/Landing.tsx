@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRightLeft, Check } from "lucide-react";
 import { motion } from "framer-motion";
-import logo from "@/assets/logo.png";
+
 
 const navLinks = [
   { to: "/", label: "Home" },
@@ -16,8 +16,7 @@ const Landing = () => {
       {/* Navbar */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-md">
         <div className="container mx-auto flex items-center justify-between h-14 px-4">
-          <div className="flex items-center gap-2">
-            <img src={logo} alt="SkillSwap logo" className="h-7 w-7" />
+          <div className="flex flex-col">
             <span className="font-display text-lg font-bold text-foreground">SkillSwap</span>
             <span className="text-[10px] text-muted-foreground -mt-0.5 hidden md:block">Connect globally. Teach what you know.</span>
           </div>
@@ -210,7 +209,7 @@ const Landing = () => {
       <footer className="border-t border-border/40 py-6 px-4">
         <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-2">
-            <img src={logo} alt="SkillSwap logo" className="h-5 w-5" />
+            <ArrowRightLeft className="h-4 w-4 text-primary" />
             <span className="font-display font-semibold">SkillSwap</span>
           </div>
           <div className="flex items-center gap-3">

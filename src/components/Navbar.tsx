@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useState, memo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import logo from "@/assets/logo.png";
+
 
 const Navbar = memo(() => {
   const location = useLocation();
@@ -36,7 +36,6 @@ const Navbar = memo(() => {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl">
       <div className="container mx-auto flex items-center justify-between h-14 px-4">
         <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2 group">
-          <img src={logo} alt="SkillSwap logo" className="h-7 w-7" />
           <span className="font-display text-lg font-bold text-foreground transition-colors group-hover:text-primary">
             SkillSwap
           </span>
