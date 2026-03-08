@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
+import { useState, memo, useCallback } from "react";
 import { toast } from "sonner";
 
 export interface MatchUser {
@@ -27,39 +27,36 @@ interface MatchCardProps {
   index?: number;
 }
 
-const MatchCard = ({ user, index = 0 }: MatchCardProps) => {
+const MatchCard = memo(({ user, index = 0 }: MatchCardProps) => {
   const { user: authUser } = useAuth();
   const [connected, setConnected] = useState(false);
 
-  const handleConnect = async () => {
+  const handleConnect = useCallback(async () => {
     if (!authUser) return;
     const { error } = await supabase.from("connections").insert({
       requester_id: authUser.id,
       receiver_id: user.user_id,
     });
     if (error) {
-      if (error.code === "23505") {
-        toast.info("Already connected!");
-      } else {
-        toast.error("Failed to connect");
-      }
+      if (error.code === "23505") toast.info("Already connected!");
+      else toast.error("Failed to connect");
     } else {
       setConnected(true);
       toast.success(`Connection request sent to ${user.name}!`);
     }
-  };
+  }, [authUser, user.user_id, user.name]);
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.1, duration: 0.4 }}
-      className="glass glass-hover rounded-xl p-5 group"
+      transition={{ delay: Math.min(index * 0.06, 0.3), duration: 0.35, ease: [0.25, 0.1, 0.25, 1] }}
+      className="glass rounded-xl p-5 group hover-lift"
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
           <div className="relative">
-            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-lg font-display font-bold">
+            <div className="h-12 w-12 rounded-full bg-gradient-to-br from-primary/40 to-accent/40 flex items-center justify-center text-lg font-display font-bold transition-transform duration-200 group-hover:scale-105">
               {user.name[0]}
             </div>
             {user.online && (
@@ -99,14 +96,14 @@ const MatchCard = ({ user, index = 0 }: MatchCardProps) => {
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 border-border hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+          className="flex-1 border-border hover:border-primary/50 hover:bg-primary/10 hover:text-primary btn-press"
           onClick={handleConnect}
           disabled={connected}
         >
           {connected ? <Check className="h-3.5 w-3.5 mr-1.5" /> : <UserPlus className="h-3.5 w-3.5 mr-1.5" />}
           {connected ? "Sent" : "Connect"}
         </Button>
-        <Button size="sm" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+        <Button size="sm" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 btn-press" asChild>
           <Link to={`/chat/${user.user_id}`}>
             <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
             Chat
@@ -115,6 +112,8 @@ const MatchCard = ({ user, index = 0 }: MatchCardProps) => {
       </div>
     </motion.div>
   );
-};
+});
+
+MatchCard.displayName = "MatchCard";
 
 export default MatchCard;
