@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Plus, BookOpen } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useGamification } from "@/hooks/useGamification";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -24,6 +25,7 @@ interface SessionRow {
 
 const Sessions = () => {
   const { user } = useAuth();
+  const { recordActivity } = useGamification();
   const [sessions, setSessions] = useState<SessionRow[]>([]);
   const [reviewedSessionIds, setReviewedSessionIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
@@ -94,12 +96,16 @@ const Sessions = () => {
 
   const completeSession = async (sessionId: string) => {
     try {
+      const session = sessions.find(s => s.id === sessionId);
       const { error } = await supabase
         .from("sessions")
         .update({ status: "completed", completed_at: new Date().toISOString() })
         .eq("id", sessionId);
       if (error) throw error;
-      toast.success("Session marked as completed!");
+      // Award points: 50 for teaching, 30 for learning
+      const isTeacher = session?.teacher_id === user?.id;
+      await recordActivity(isTeacher ? "teaching_session" : "learning_session", isTeacher ? 50 : 30);
+      toast.success(`Session completed! +${isTeacher ? 50 : 30} points`);
       fetchData();
     } catch (err) {
       console.error(err);

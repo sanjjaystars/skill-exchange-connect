@@ -31,7 +31,9 @@ const ReviewForm = ({ sessionId, reviewerId, reviewedUserId, onSubmitted }: Revi
         comment: comment.trim().slice(0, 500),
       });
       if (error) throw error;
-      toast.success("Review submitted!");
+      // Award 10 points for leaving a review
+      await supabase.rpc("record_activity", { p_user_id: reviewerId, p_activity_type: "review", p_points: 10 });
+      toast.success("Review submitted! +10 points");
       onSubmitted();
     } catch (err: any) {
       console.error("Review error:", err);

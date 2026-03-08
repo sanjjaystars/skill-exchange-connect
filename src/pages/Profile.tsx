@@ -3,15 +3,19 @@ import SkillTag from "@/components/SkillTag";
 import StarRating from "@/components/StarRating";
 import ReputationBadge from "@/components/ReputationBadge";
 import ReviewCard from "@/components/ReviewCard";
+import PointsCounter from "@/components/PointsCounter";
+import StreakIndicator from "@/components/StreakIndicator";
+import BadgeDisplay from "@/components/BadgeDisplay";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Clock, Edit3, Save, Plus, X, Star } from "lucide-react";
+import { MapPin, Clock, Edit3, Save, Plus, X, Star, Trophy } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useGamification } from "@/hooks/useGamification";
 import { toast } from "sonner";
 
 interface Review {
@@ -30,6 +34,7 @@ interface Reputation {
 
 const Profile = () => {
   const { user } = useAuth();
+  const { stats: gamification, loading: gamLoading } = useGamification();
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -52,12 +57,7 @@ const Profile = () => {
       const [profileRes, repRes, reviewsRes] = await Promise.all([
         supabase.from("profiles").select("*").eq("user_id", user.id).single(),
         supabase.rpc("get_user_reputation", { target_user_id: user.id }),
-        supabase
-          .from("reviews")
-          .select("id, reviewer_id, rating, comment, created_at")
-          .eq("reviewed_user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(10),
+        supabase.from("reviews").select("id, reviewer_id, rating, comment, created_at").eq("reviewed_user_id", user.id).order("created_at", { ascending: false }).limit(10),
       ]);
 
       if (profileRes.error) throw profileRes.error;
@@ -83,22 +83,10 @@ const Profile = () => {
 
       if (reviewsRes.data && reviewsRes.data.length > 0) {
         const reviewerIds = [...new Set(reviewsRes.data.map((r: any) => r.reviewer_id))];
-        const { data: reviewerProfiles } = await supabase
-          .from("profiles")
-          .select("user_id, name")
-          .in("user_id", reviewerIds);
+        const { data: reviewerProfiles } = await supabase.from("profiles").select("user_id, name").in("user_id", reviewerIds);
         const nameMap: Record<string, string> = {};
         (reviewerProfiles ?? []).forEach(p => { nameMap[p.user_id] = p.name; });
-
-        setReviews(
-          reviewsRes.data.map((r: any) => ({
-            id: r.id,
-            reviewer_name: nameMap[r.reviewer_id] || "Anonymous",
-            rating: r.rating,
-            comment: r.comment || "",
-            created_at: r.created_at,
-          }))
-        );
+        setReviews(reviewsRes.data.map((r: any) => ({ id: r.id, reviewer_name: nameMap[r.reviewer_id] || "Anonymous", rating: r.rating, comment: r.comment || "", created_at: r.created_at })));
       }
     } catch (err) {
       console.error("Failed to fetch profile:", err);
@@ -114,17 +102,7 @@ const Profile = () => {
     if (!user || saving) return;
     setSaving(true);
     try {
-      const { error } = await supabase
-        .from("profiles")
-        .update({
-          name: profile.name,
-          location: profile.location,
-          bio: profile.bio,
-          teaches: profile.teaches,
-          wants: profile.wants,
-          availability: profile.availability,
-        })
-        .eq("user_id", user.id);
+      const { error } = await supabase.from("profiles").update({ name: profile.name, location: profile.location, bio: profile.bio, teaches: profile.teaches, wants: profile.wants, availability: profile.availability }).eq("user_id", user.id);
       if (error) throw error;
       toast.success("Profile saved!");
       setEditing(false);
@@ -182,8 +160,9 @@ const Profile = () => {
                     <span>{profile.location || "Not set"}</span>
                   )}
                 </div>
-                <div className="mt-2">
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
                   <ReputationBadge averageRating={reputation.average_rating} totalReviews={reputation.total_reviews} completedSessions={reputation.completed_sessions} />
+                  <StreakIndicator days={gamification.streak_days} size="sm" />
                 </div>
               </div>
             </div>
@@ -193,10 +172,14 @@ const Profile = () => {
             </Button>
           </div>
 
-          {/* Rating Stats */}
-          <div className="grid grid-cols-3 gap-3 mb-6">
+          {/* Gamification Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
             <div className="bg-secondary/50 rounded-xl border border-border p-3 text-center">
-              <div className="flex items-center justify-center gap-1 mb-1">
+              <PointsCounter points={gamification.total_points} size="sm" />
+              <p className="text-[11px] text-muted-foreground mt-1">Total Points</p>
+            </div>
+            <div className="bg-secondary/50 rounded-xl border border-border p-3 text-center">
+              <div className="flex items-center justify-center gap-1 mb-0.5">
                 <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                 <span className="text-lg font-display font-bold">{reputation.average_rating}</span>
               </div>
@@ -207,9 +190,18 @@ const Profile = () => {
               <p className="text-[11px] text-muted-foreground">Reviews</p>
             </div>
             <div className="bg-secondary/50 rounded-xl border border-border p-3 text-center">
-              <span className="text-lg font-display font-bold">{reputation.completed_sessions}</span>
-              <p className="text-[11px] text-muted-foreground">Sessions</p>
+              <div className="flex items-center justify-center gap-1">
+                <Trophy className="h-4 w-4 text-primary" />
+                <span className="text-lg font-display font-bold">#{gamification.rank ?? "–"}</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground">Rank</p>
             </div>
+          </div>
+
+          {/* Badges */}
+          <div className="mb-6">
+            <Label className="text-sm font-medium text-muted-foreground mb-2 block">Badges Earned</Label>
+            <BadgeDisplay badges={gamification.badges} />
           </div>
 
           {/* Bio */}

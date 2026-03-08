@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_log: {
+        Row: {
+          activity_type: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          points_earned: number
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          points_earned?: number
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          points_earned?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       connections: {
         Row: {
           created_at: string
@@ -175,12 +202,50 @@ export type Database = {
         }
         Relationships: []
       }
+      user_gamification: {
+        Row: {
+          badges: string[]
+          created_at: string
+          id: string
+          last_active_date: string | null
+          streak_days: number
+          total_points: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          badges?: string[]
+          created_at?: string
+          id?: string
+          last_active_date?: string | null
+          streak_days?: number
+          total_points?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          badges?: string[]
+          created_at?: string
+          id?: string
+          last_active_date?: string | null
+          streak_days?: number
+          total_points?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      get_leaderboard: { Args: { p_period?: string }; Returns: Json }
       get_user_reputation: { Args: { target_user_id: string }; Returns: Json }
+      record_activity: {
+        Args: { p_activity_type: string; p_points: number; p_user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
