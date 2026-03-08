@@ -1,12 +1,17 @@
 import SkillTag from "./SkillTag";
 import MatchBadge from "./MatchBadge";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, UserPlus } from "lucide-react";
+import { MessageSquare, UserPlus, Check } from "lucide-react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { toast } from "sonner";
 
 export interface MatchUser {
   id: string;
+  user_id: string;
   name: string;
   location: string;
   bio: string;
@@ -23,6 +28,27 @@ interface MatchCardProps {
 }
 
 const MatchCard = ({ user, index = 0 }: MatchCardProps) => {
+  const { user: authUser } = useAuth();
+  const [connected, setConnected] = useState(false);
+
+  const handleConnect = async () => {
+    if (!authUser) return;
+    const { error } = await supabase.from("connections").insert({
+      requester_id: authUser.id,
+      receiver_id: user.user_id,
+    });
+    if (error) {
+      if (error.code === "23505") {
+        toast.info("Already connected!");
+      } else {
+        toast.error("Failed to connect");
+      }
+    } else {
+      setConnected(true);
+      toast.success(`Connection request sent to ${user.name}!`);
+    }
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -70,12 +96,18 @@ const MatchCard = ({ user, index = 0 }: MatchCardProps) => {
       </div>
 
       <div className="flex gap-2">
-        <Button variant="outline" size="sm" className="flex-1 border-border hover:border-primary/50 hover:bg-primary/10 hover:text-primary">
-          <UserPlus className="h-3.5 w-3.5 mr-1.5" />
-          Connect
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 border-border hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+          onClick={handleConnect}
+          disabled={connected}
+        >
+          {connected ? <Check className="h-3.5 w-3.5 mr-1.5" /> : <UserPlus className="h-3.5 w-3.5 mr-1.5" />}
+          {connected ? "Sent" : "Connect"}
         </Button>
         <Button size="sm" className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90" asChild>
-          <Link to="/chat">
+          <Link to={`/chat/${user.user_id}`}>
             <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
             Chat
           </Link>
